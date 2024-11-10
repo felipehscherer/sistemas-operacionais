@@ -1,2 +1,0 @@
-# sistemas-operacionais
-# sistemas-operacionais
