@@ -52,7 +52,8 @@ public class ClientThread implements Runnable {
         }
     }
 
-    public static void runMultipleClients(String host, int port, int numClients, int numReads, int numWrites, String operationSequence) {
+    public static void runMultipleClients(String host, int port, int numClients, int numReads, int numWrites,
+            String operationSequence) {
         List<Thread> clientThreads = new ArrayList<>();
 
         for (int i = 0; i < numClients; i++) {
@@ -73,5 +74,33 @@ public class ClientThread implements Runnable {
         }
 
         log("All client threads have finished.");
+    }
+
+    // public static void main(String[] args) {
+    //     String host = "localhost";
+    //     int port = 12345;
+    //     int numClients = 5;
+    //     int numReads = 3;
+    //     int numWrites = 2;
+    //     String operationSequence = "RWRW";
+
+    //     runMultipleClients(host, port, numClients, numReads, numWrites, operationSequence);
+    // }
+
+    public static void main(String[] args) {
+        if (args.length < 6) {
+            System.out.println("Uso: java client.ClientThread <host> <port> <numClients> <numReads> <numWrites> <operationSequence>");
+            System.out.println("Exemplo: java client.ClientThread localhost 12345 5 3 2 RWRW");
+            return;
+        }
+
+        String host = args[0];
+        int port = Integer.parseInt(args[1]);
+        int numClients = Integer.parseInt(args[2]);
+        int numReads = Integer.parseInt(args[3]);
+        int numWrites = Integer.parseInt(args[4]);
+        String operationSequence = args[5];
+
+        runMultipleClients(host, port, numClients, numReads, numWrites, operationSequence);
     }
 }

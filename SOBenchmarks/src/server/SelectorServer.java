@@ -8,9 +8,9 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class SelectorServer extends Server{
+public class SelectorServer extends Server {
     private Selector selector;
-    private ReentrantLock lock = new ReentrantLock(); // Controle de sessão crítica
+    private ReentrantLock lock = new ReentrantLock();
 
     public SelectorServer(int port) throws IOException {
         super(port);
@@ -23,15 +23,13 @@ public class SelectorServer extends Server{
 
     @Override
     public void runServer() {
-        log("SelectorServer started on port " + port);
+        log("Servidor SelectorServer iniciado na porta " + port);
         while (true) {
             try {
-                // Seleciona os canais prontos para operações de I/O
                 selector.select();
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
                 Iterator<SelectionKey> iter = selectedKeys.iterator();
 
-                // Itera sobre as chaves selecionadas
                 while (iter.hasNext()) {
                     SelectionKey key = iter.next();
 
@@ -40,10 +38,10 @@ public class SelectorServer extends Server{
                     }
 
                     if (key.isReadable()) {
-                        handleClient(key); // Lida com o cliente quando há dados disponíveis para leitura
+                        handleClient(key);
                     }
 
-                    iter.remove(); // Remove a chave processada para evitar repetições
+                    iter.remove();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -56,61 +54,43 @@ public class SelectorServer extends Server{
         SocketChannel clientSocket = serverSocketChannel.accept();
         clientSocket.configureBlocking(false);
         clientSocket.register(selector, SelectionKey.OP_READ);
-        log("Client connected: " + clientSocket.getRemoteAddress());
+        String clientId = String.valueOf(clientSocket.getRemoteAddress().toString().split(":")[1]);
+        log(clientId, "Cliente conectado");
     }
 
     protected void handleClient(SelectionKey key) {
         boolean criticalSectionEnabled = ServerConfig.getInstance().isCriticalSectionAccessControlEnabled();
-
         if (criticalSectionEnabled) {
-            lock.lock(); // Tenta obter o lock se a sessão crítica estiver habilitada
+            lock.lock();
         }
-
         try {
             SocketChannel clientChannel = (SocketChannel) key.channel();
             ByteBuffer buffer = ByteBuffer.allocate(256);
-
-            // Lê dados do cliente
             int bytesRead = clientChannel.read(buffer);
-
             if (bytesRead == -1) {
-                clientChannel.close(); // Fecha o canal se o cliente terminou a conexão
-                System.out.println("Client disconnected");
+                clientChannel.close();
+                log("Cliente desconectado");
                 return;
             }
-
-            // Prepara o buffer para leitura de dados recebidos
             buffer.flip();
             byte[] clientMessageBytes = new byte[buffer.remaining()];
             buffer.get(clientMessageBytes);
             String clientMessage = new String(clientMessageBytes);
-
-            log("Received message from client: " + clientMessage);
-
-            // Processa a mensagem (exemplo: apenas devolve a mesma mensagem)
-            String response = "Message received: " + clientMessage;
+            String clientId = String.valueOf(clientChannel.getRemoteAddress().toString().split(":")[1]);
+            log(clientId, "Mensagem recebida: " + clientMessage);
+            String response = "Mensagem recebida: " + clientMessage;
             buffer.clear();
             buffer.put(response.getBytes());
             buffer.flip();
-
-            // Envia a resposta de volta para o cliente
             while (buffer.hasRemaining()) {
                 clientChannel.write(buffer);
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             if (criticalSectionEnabled) {
-                lock.unlock(); // Libera o lock se a sessão crítica estiver habilitada
+                lock.unlock();
             }
         }
-    }
-
-    public static void main(String[] args) throws IOException {
-        // Aqui a aplicação recebe a configuração global de ServerConfig e roda o SelectorServer
-        ServerConfig config = ServerConfig.getInstance();
-        SelectorServer selectorServer = new SelectorServer(8080);
-        selectorServer.startServer();
     }
 }

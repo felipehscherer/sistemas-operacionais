@@ -21,21 +21,22 @@ public class ThreadedServer extends Server {
         try {
             this.serverSocket = new ServerSocket(this.port);
         } catch (IOException e) {
-            System.err.println("Error initializing server socket: " + e.getMessage());
+            System.err.println("Erro ao inicializar o socket do servidor: " + e.getMessage());
         }
     }
 
     @Override
     protected void runServer() {
-        log("ThreadedServer started on port " + port);
+        log("Servidor ThreadedServer iniciado na porta " + port);
         while (running) {
             try {
                 Socket clientSocket = serverSocket.accept();
-                log("Client connected from " + clientSocket.getRemoteSocketAddress());
-                threadPool.execute(() -> handleClient(clientSocket));
+                String clientId = String.valueOf(clientSocket.getPort());
+                log(clientId, "Cliente conectado");
+                threadPool.execute(() -> handleClient(clientSocket, clientId));
             } catch (IOException e) {
                 if (running) {
-                    System.err.println("Error accepting client connection: " + e.getMessage());
+                    System.err.println("Erro ao aceitar conexão do cliente: " + e.getMessage());
                 }
             }
         }
@@ -50,11 +51,11 @@ public class ThreadedServer extends Server {
                 this.serverSocket.close();
             }
         } catch (IOException e) {
-            System.err.println("Error closing server socket: " + e.getMessage());
+            System.err.println("Erro ao fechar o socket do servidor: " + e.getMessage());
         }
     }
 
-    protected void handleClient(Socket clientSocket) {
+    protected void handleClient(Socket clientSocket, String clientId) {
         boolean criticalSectionEnabled = ServerConfig.getInstance().isCriticalSectionAccessControlEnabled();
 
         try {
@@ -67,7 +68,7 @@ public class ThreadedServer extends Server {
 
             String clientMessage;
             while ((clientMessage = in.readLine()) != null) {
-                log("Received message from client: " + clientMessage);
+                log(clientId, "Mensagem recebida: " + clientMessage);
                 String response = processCommand(clientMessage);
                 out.println(response);
             }
@@ -80,7 +81,7 @@ public class ThreadedServer extends Server {
             }
             try {
                 clientSocket.close();
-                log("Client disconnected.");
+                log(clientId, "Cliente desconectado.");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -93,14 +94,13 @@ public class ThreadedServer extends Server {
         if ("READ".equalsIgnoreCase(cmd)) {
             int position = Integer.parseInt(parts[1]);
             // Implementar a lógica de leitura (por exemplo, ler de um array ou banco de dados)
-            return "Data read from position " + position;
+            return "Dados lidos da posição " + position;
         } else if ("WRITE".equalsIgnoreCase(cmd)) {
             int position = Integer.parseInt(parts[1]);
             // Implementar a lógica de escrita
-            return "Data written to position " + position;
+            return "Dados escritos na posição " + position;
         } else {
-            return "Unknown command.";
+            return "Comando desconhecido.";
         }
     }
-
 }

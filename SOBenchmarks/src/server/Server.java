@@ -1,7 +1,5 @@
 package server;
 
-import java.io.IOException;
-
 public abstract class Server {
     protected int port;
     protected boolean running;
@@ -12,13 +10,19 @@ public abstract class Server {
         }
     }
 
+    protected void log(String clientId, String message) {
+        if (ServerConfig.getInstance().isPrintLogEnabled()) {
+            System.out.println("Cliente " + clientId + ": " + message);
+        }
+    }
+
     public Server(int port) {
         this.port = port;
     }
 
     public void startServer() {
         this.running = true;
-        System.out.println("Server started on port " + this.port);
+        System.out.println("Servidor iniciado na porta " + this.port);
         this.runServer();
     }
 
@@ -26,6 +30,6 @@ public abstract class Server {
 
     public void stopServer() {
         this.running = false;
-        System.out.println("Server stopped.");
+        System.out.println("Servidor parado.");
     }
 }
