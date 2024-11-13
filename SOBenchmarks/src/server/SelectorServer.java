@@ -12,8 +12,8 @@ public class SelectorServer extends Server {
     private Selector selector;
     private ReentrantLock lock = new ReentrantLock();
 
-    public SelectorServer(int port) throws IOException {
-        super(port);
+    public SelectorServer(int port, int databaseSize) throws IOException {
+        super(port, databaseSize);
         selector = Selector.open();
         ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.bind(new InetSocketAddress(port));
@@ -24,7 +24,7 @@ public class SelectorServer extends Server {
     @Override
     public void runServer() {
         log("Servidor SelectorServer iniciado na porta " + port);
-        while (true) {
+        while (running) {
             try {
                 selector.select();
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
@@ -32,6 +32,11 @@ public class SelectorServer extends Server {
 
                 while (iter.hasNext()) {
                     SelectionKey key = iter.next();
+                    iter.remove();
+
+                    if (!key.isValid()) {
+                        continue;
+                    }
 
                     if (key.isAcceptable()) {
                         register(selector, key);
@@ -40,12 +45,22 @@ public class SelectorServer extends Server {
                     if (key.isReadable()) {
                         handleClient(key);
                     }
-
-                    iter.remove();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    @Override
+    public void stopServer() {
+        super.stopServer();
+        try {
+            if (selector != null) {
+                selector.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Erro ao fechar o selector: " + e.getMessage());
         }
     }
 
@@ -75,10 +90,10 @@ public class SelectorServer extends Server {
             buffer.flip();
             byte[] clientMessageBytes = new byte[buffer.remaining()];
             buffer.get(clientMessageBytes);
-            String clientMessage = new String(clientMessageBytes);
+            String clientMessage = new String(clientMessageBytes).trim(); // Use trim() to remove whitespace
             String clientId = String.valueOf(clientChannel.getRemoteAddress().toString().split(":")[1]);
             log(clientId, "Mensagem recebida: " + clientMessage);
-            String response = "Mensagem recebida: " + clientMessage;
+            String response = processCommand(clientMessage);
             buffer.clear();
             buffer.put(response.getBytes());
             buffer.flip();
@@ -87,10 +102,31 @@ public class SelectorServer extends Server {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            try {
+                key.channel().close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         } finally {
             if (criticalSectionEnabled) {
                 lock.unlock();
             }
+        }
+    }
+
+    private String processCommand(String command) {
+        String[] parts = command.split(" ");
+        String cmd = parts[0];
+        if ("READ".equalsIgnoreCase(cmd)) {
+            int position = Integer.parseInt(parts[1].trim());
+            return "Dados lidos da posição " + position + ": " + database.read(position);
+        } else if ("WRITE".equalsIgnoreCase(cmd)) {
+            int position = Integer.parseInt(parts[1].trim());
+            int value = Integer.parseInt(parts[2].trim());
+            database.write(position, value);
+            return "Dados escritos na posição " + position;
+        } else {
+            return "Comando desconhecido.";
         }
     }
 }

@@ -1,10 +1,6 @@
 package server;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.locks.ReentrantLock;
@@ -13,8 +9,8 @@ public class ProcessServer extends Server {
     private ReentrantLock lock = new ReentrantLock();
     private ServerSocket serverSocket;
 
-    public ProcessServer(int port) {
-        super(port);
+    public ProcessServer(int port, int databaseSize) {
+        super(port, databaseSize);
         try {
             this.serverSocket = new ServerSocket(this.port);
         } catch (IOException e) {
@@ -57,7 +53,8 @@ public class ProcessServer extends Server {
             if (criticalSectionEnabled) {
                 lock.lock();
             }
-            ProcessBuilder processBuilder = new ProcessBuilder("java", "-cp", System.getProperty("java.class.path"), "server.ProcessServer$ClientHandler");
+            ProcessBuilder processBuilder = new ProcessBuilder("java", "-cp", System.getProperty("java.class.path"),
+                    "server.ProcessServer$ClientHandler");
             Process process = processBuilder.start();
             PrintWriter processOut = new PrintWriter(new OutputStreamWriter(process.getOutputStream()), true);
             BufferedReader processIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -78,7 +75,7 @@ public class ProcessServer extends Server {
             }
             try {
                 clientSocket.close();
-                log(clientId, "Cliente desconectado.\n");
+                log(clientId, "Cliente desconectado.");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -106,11 +103,9 @@ public class ProcessServer extends Server {
             String cmd = parts[0];
             if ("READ".equalsIgnoreCase(cmd)) {
                 int position = Integer.parseInt(parts[1]);
-                // Implementar a lógica de leitura (por exemplo, ler de um array ou banco de dados)
                 return "Dados lidos da posição " + position;
             } else if ("WRITE".equalsIgnoreCase(cmd)) {
                 int position = Integer.parseInt(parts[1]);
-                // Implementar a lógica de escrita
                 return "Dados escritos na posição " + position;
             } else {
                 return "Comando desconhecido.";

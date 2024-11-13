@@ -44,7 +44,7 @@ public class Client {
         return sendCommand("READ " + position);
     }
 
-    public String write(int position) throws IOException {
-        return sendCommand("WRITE " + position);
+    public String write(int position, int value) throws IOException {
+        return sendCommand("WRITE " + position + " " + value);
     }
 }

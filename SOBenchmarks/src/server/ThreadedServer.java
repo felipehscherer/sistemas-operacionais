@@ -15,8 +15,8 @@ public class ThreadedServer extends Server {
     private ReentrantLock lock = new ReentrantLock();
     private ServerSocket serverSocket;
 
-    public ThreadedServer(int port, int maxThreads) {
-        super(port);
+    public ThreadedServer(int port, int maxThreads, int databaseSize) {
+        super(port, databaseSize);
         this.threadPool = Executors.newFixedThreadPool(maxThreads);
         try {
             this.serverSocket = new ServerSocket(this.port);
@@ -93,11 +93,14 @@ public class ThreadedServer extends Server {
         String cmd = parts[0];
         if ("READ".equalsIgnoreCase(cmd)) {
             int position = Integer.parseInt(parts[1]);
-            // Implementar a lógica de leitura (por exemplo, ler de um array ou banco de dados)
-            return "Dados lidos da posição " + position;
+            return "Dados lidos da posição " + position + ": " + database.read(position);
         } else if ("WRITE".equalsIgnoreCase(cmd)) {
+            if (parts.length < 3) {
+                return "Comando WRITE inválido. Uso: WRITE <posição> <valor>";
+            }
             int position = Integer.parseInt(parts[1]);
-            // Implementar a lógica de escrita
+            int value = Integer.parseInt(parts[2]);
+            database.write(position, value);
             return "Dados escritos na posição " + position;
         } else {
             return "Comando desconhecido.";
