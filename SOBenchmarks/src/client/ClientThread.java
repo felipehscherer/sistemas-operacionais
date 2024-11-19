@@ -24,7 +24,9 @@ public class ClientThread implements Runnable {
         log("Iniciando client thread");
         try {
             cliente.connect();
+            System.out.println("1");
             performOperations();
+            System.out.println("2");
             cliente.disconnect();
         } catch (IOException e) {
             System.err.println("Error in client thread: " + e.getMessage());
