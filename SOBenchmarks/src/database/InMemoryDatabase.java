@@ -66,4 +66,8 @@ public class InMemoryDatabase extends Database {
             }
         }
     }
+
+    public int getSize() {
+        return data.length;
+    }
 }

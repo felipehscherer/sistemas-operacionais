@@ -24,12 +24,12 @@ public class ClientThread implements Runnable {
         log("Iniciando client thread");
         try {
             cliente.connect();
-            System.out.println("1");
+            log("1");
             performOperations();
-            System.out.println("2");
+            log("2");
             cliente.disconnect();
         } catch (IOException e) {
-            System.err.println("Error in client thread: " + e.getMessage());
+            log("Error in client thread: " + e.getMessage());
         }
     }
 
@@ -55,7 +55,7 @@ public class ClientThread implements Runnable {
     }
 
     public static void runMultipleClients(String host, int port, int numClients, int numReads, int numWrites,
-                                          String operationSequence) {
+            String operationSequence) {
         List<Thread> clientThreads = new ArrayList<>();
 
         for (int i = 0; i < numClients; i++) {
@@ -79,7 +79,8 @@ public class ClientThread implements Runnable {
 
     public static void main(String[] args) {
         if (args.length < 6) {
-            System.out.println("Uso: java client.ClientThread <host> <port> <numClients> <numReads> <numWrites> <operationSequence>");
+            System.out.println(
+                    "Uso: java client.ClientThread <host> <port> <numClients> <numReads> <numWrites> <operationSequence>");
             System.out.println("Exemplo: ");
             return;
         }

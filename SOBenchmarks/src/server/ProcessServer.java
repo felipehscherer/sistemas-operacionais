@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.locks.ReentrantLock;
+import database.*;
 
 public class ProcessServer extends Server {
     private ReentrantLock lock = new ReentrantLock();
@@ -53,18 +54,12 @@ public class ProcessServer extends Server {
             if (criticalSectionEnabled) {
                 lock.lock();
             }
-            ProcessBuilder processBuilder = new ProcessBuilder("java", "-cp", System.getProperty("java.class.path"),
-                    "server.ProcessServer$ClientHandler");
-            Process process = processBuilder.start();
-            PrintWriter processOut = new PrintWriter(new OutputStreamWriter(process.getOutputStream()), true);
-            BufferedReader processIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
             BufferedReader clientIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter clientOut = new PrintWriter(clientSocket.getOutputStream(), true);
             String clientMessage;
             while ((clientMessage = clientIn.readLine()) != null) {
                 log(clientId, "Mensagem recebida: " + clientMessage);
-                processOut.println(clientMessage);
-                String response = processIn.readLine();
+                String response = processCommand(clientMessage);
                 clientOut.println(response);
             }
         } catch (IOException e) {
@@ -82,34 +77,19 @@ public class ProcessServer extends Server {
         }
     }
 
-    public static class ClientHandler {
-        public static void main(String[] args) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-            PrintWriter out = new PrintWriter(System.out, true);
-
-            String clientMessage;
-            try {
-                while ((clientMessage = in.readLine()) != null) {
-                    String response = processCommand(clientMessage);
-                    out.println(response);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        private static String processCommand(String command) {
-            String[] parts = command.split(" ");
-            String cmd = parts[0];
-            if ("READ".equalsIgnoreCase(cmd)) {
-                int position = Integer.parseInt(parts[1]);
-                return "Dados lidos da posição " + position;
-            } else if ("WRITE".equalsIgnoreCase(cmd)) {
-                int position = Integer.parseInt(parts[1]);
-                return "Dados escritos na posição " + position;
-            } else {
-                return "Comando desconhecido.";
-            }
+    private String processCommand(String command) {
+        String[] parts = command.split(" ");
+        String cmd = parts[0];
+        if ("READ".equalsIgnoreCase(cmd)) {
+            int position = Integer.parseInt(parts[1]);
+            return "Dados lidos da posição " + position + ": " + database.read(position);
+        } else if ("WRITE".equalsIgnoreCase(cmd)) {
+            int position = Integer.parseInt(parts[1]);
+            int value = Integer.parseInt(parts[2]);
+            database.write(position, value);
+            return "Dados escritos na posição " + position;
+        } else {
+            return "Comando desconhecido.";
         }
     }
 }
