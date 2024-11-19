@@ -11,7 +11,7 @@ public class Main {
         int port = 12345;
         boolean printLogEnabled = true;
         boolean criticalSectionEnabled = false;
-        int maxThreads = 10;
+        int maxThreads = 1000;
         String serverType = "process";
         int databaseSize = 100;
 
@@ -21,7 +21,7 @@ public class Main {
                 printLogEnabled = Boolean.parseBoolean(args[1]);
                 criticalSectionEnabled = Boolean.parseBoolean(args[2]);
                 serverType = args.length > 3 ? args[3].toLowerCase() : "process";
-                maxThreads = args.length > 4 ? Integer.parseInt(args[4]) : 10;
+                maxThreads = args.length > 4 ? Integer.parseInt(args[4]) : 20;
                 databaseSize = args.length > 5 ? Integer.parseInt(args[5]) : 100;
             } catch (Exception e) {
                 System.out.println(
