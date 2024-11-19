@@ -1,19 +1,17 @@
 package database;
 
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 public class InMemoryDatabase extends Database {
     private final int[] data;
-    private final ReentrantLock[] locks;
+    private final ReadWriteLock lock;
     private final boolean criticalSectionEnabled;
 
     public InMemoryDatabase(int size, boolean criticalSectionEnabled) {
         this.criticalSectionEnabled = criticalSectionEnabled;
         data = new int[size];
-        locks = new ReentrantLock[size];
-        for (int i = 0; i < size; i++) {
-            locks[i] = new ReentrantLock();
-        }
+        lock = new ReentrantReadWriteLock();
         initializeData();
     }
 
@@ -26,13 +24,13 @@ public class InMemoryDatabase extends Database {
     @Override
     public int read(int position) {
         if (criticalSectionEnabled) {
-            locks[position].lock();
+            lock.readLock().lock();
         }
         try {
             return data[position];
         } finally {
             if (criticalSectionEnabled) {
-                locks[position].unlock();
+                lock.readLock().unlock();
             }
         }
     }
@@ -40,36 +38,32 @@ public class InMemoryDatabase extends Database {
     @Override
     public void write(int position, int value) {
         if (criticalSectionEnabled) {
-            locks[position].lock();
+            lock.writeLock().lock();
         }
         try {
-            data[position] += value; // Corrige a operação de escrita para adicionar o valor
+            data[position] += value; // Adiciona o valor à posição
         } finally {
             if (criticalSectionEnabled) {
-                locks[position].unlock();
+                lock.writeLock().unlock();
             }
         }
     }
 
     @Override
     public int sum() {
-        int sum = 0;
         if (criticalSectionEnabled) {
-            for (int i = 0; i < data.length; i++) {
-                locks[i].lock();
-            }
+            lock.readLock().lock();
         }
         try {
-            for (int i = 0; i < data.length; i++) {
-                sum += data[i];
+            int sum = 0;
+            for (int value : data) {
+                sum += value;
             }
+            return sum;
         } finally {
             if (criticalSectionEnabled) {
-                for (int i = 0; i < data.length; i++) {
-                    locks[i].unlock();
-                }
+                lock.readLock().unlock();
             }
         }
-        return sum;
     }
 }

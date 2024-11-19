@@ -78,7 +78,7 @@ public class ClientThread implements Runnable {
     public static void main(String[] args) {
         if (args.length < 6) {
             System.out.println("Uso: java client.ClientThread <host> <port> <numClients> <numReads> <numWrites> <operationSequence>");
-            System.out.println("Exemplo: java client.ClientThread localhost 12345 5 3 2 RWRW");
+            System.out.println("Exemplo: ");
             return;
         }
         String host = args[0];
