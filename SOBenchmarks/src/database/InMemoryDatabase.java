@@ -23,6 +23,7 @@ public class InMemoryDatabase extends Database {
         }
     }
 
+    @Override
     public int read(int position) {
         if (criticalSectionEnabled) {
             locks[position].lock();
@@ -36,6 +37,7 @@ public class InMemoryDatabase extends Database {
         }
     }
 
+    @Override
     public void write(int position, int value) {
         if (criticalSectionEnabled) {
             locks[position].lock();
@@ -49,6 +51,7 @@ public class InMemoryDatabase extends Database {
         }
     }
 
+    @Override
     public int sum() {
         int sum = 0;
         if (criticalSectionEnabled) {
