@@ -53,7 +53,7 @@ public abstract class AbstractServer {
         startServerSocket();
     }
 
-    private boolean validateArgs(String[] args) {
+    protected boolean validateArgs(String[] args) {
         if (args.length != 3) {
             System.out.println("Uso: java server/ThreadServer <tamanho_vetor> <usar_mutex>(true/false) <log>(true/false)");
             return false;
@@ -62,7 +62,8 @@ public abstract class AbstractServer {
     }
 
     protected void initializeThreadPool() {
-        threadPool = Executors.newCachedThreadPool();
+        //threadPool = Executors.newCachedThreadPool();
+        threadPool = Executors.newFixedThreadPool(1000); // Para testar altas conexões
         updateLastActivityTime();
     }
 
@@ -76,7 +77,7 @@ public abstract class AbstractServer {
                                 activeConnections.get() == 0) {
                             printSummary();
                             Thread.sleep(1000);
-                            log("\nServidor aguardando novas conexões...");
+                            //log("\nServidor aguardando novas conexões...");
                         }
                     }
                 } catch (InterruptedException e) {
@@ -89,7 +90,8 @@ public abstract class AbstractServer {
     }
 
     private void startServerSocket() {
-        try (ServerSocket serverSocket = new ServerSocket(port, Integer.MAX_VALUE)) {
+        //Claudinho disse que esse integer.maxvalues aí pode causar problemas
+        try (ServerSocket serverSocket = new ServerSocket(port, 100000)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 activeConnections.incrementAndGet();
