@@ -12,7 +12,7 @@ import static util.Log.log;
 public class ProcessServer extends AbstractServer {
     private static final int DEFAULT_PORT = 12345;
     private static final int NUM_WORKER_PROCESSES = 4;
-    private static final int MAX_CONNECTIONS_PER_WORKER = 250;
+    private static final int MAX_CONNECTIONS_PER_WORKER = 750;
     private static final String SHARED_MEMORY_FILE = "shared_memory.dat";
 
     private MappedByteBuffer sharedMemory;

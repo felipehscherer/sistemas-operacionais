@@ -89,7 +89,7 @@ public abstract class AbstractServer {
         monitorThread.start();
     }
 
-    private void startServerSocket() {
+    protected void startServerSocket() {
         //Claudinho disse que esse integer.maxvalues aí pode causar problemas
         try (ServerSocket serverSocket = new ServerSocket(port, 100000)) {
             while (true) {
