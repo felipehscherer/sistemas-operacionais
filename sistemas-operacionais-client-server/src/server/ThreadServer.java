@@ -70,13 +70,13 @@ public class ThreadServer extends AbstractServer {
     @Override
     protected void printSummary() {
         int sum = 0;
-        log("\n=== SUMÁRIO DA EXECUÇÃO ===");
-        log("Conteúdo final do vetor:");
+        //log("\n=== SUMÁRIO DA EXECUÇÃO ===");
+        //log("Conteúdo final do vetor:");
         for (int i = 0; i < database.length; i++) {
             //log("Posição %d: %d%n", i, database[i]);
             sum += database[i];
         }
         System.out.println("\nSomatório total do vetor: " + sum); // deixei pra sempre vermos o resultado
-        log("==========================");
+        //log("==========================");
     }
 }

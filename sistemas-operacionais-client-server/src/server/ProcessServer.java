@@ -11,8 +11,8 @@ import static util.Log.log;
 
 public class ProcessServer extends AbstractServer {
     private static final int DEFAULT_PORT = 12345;
-    private static final int NUM_WORKER_PROCESSES = 4;
-    private static final int MAX_CONNECTIONS_PER_WORKER = 250;
+    private static final int NUM_WORKER_PROCESSES = 6;
+    private static final int MAX_CONNECTIONS_PER_WORKER = 500;
     private static final String SHARED_MEMORY_FILE = "shared_memory.dat";
 
     private MappedByteBuffer sharedMemory;
@@ -57,7 +57,7 @@ public class ProcessServer extends AbstractServer {
             // Iniciar processos workers
             startWorkerProcesses(size);
 
-            // Iniciar thread de monitoramento de saúde dos workers
+            // Iniciar monitoramento de saúde dos workers
             startHealthCheck();
 
         } catch (IOException e) {
