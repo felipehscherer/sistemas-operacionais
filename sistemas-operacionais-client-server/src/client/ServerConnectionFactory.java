@@ -12,6 +12,8 @@ public abstract class ServerConnectionFactory {
                 return new ThreadServerConnectionFactory();
             case "PROCESS":
                 return new ProcessServerConnectionFactory();
+            case "SELECTOR":
+                return new SelectorServerConnectionFactory();
             default:
                 return null;
         }
