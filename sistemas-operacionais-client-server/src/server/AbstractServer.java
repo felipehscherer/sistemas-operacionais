@@ -130,7 +130,7 @@ public abstract class AbstractServer {
                     int position = Integer.parseInt(parts[1]);
 
                     if (position >= database.length) {
-                        out.println("ERROR: Posição inválida");
+                        log("ERROR: Posição inválida");
                         continue;
                     }
 

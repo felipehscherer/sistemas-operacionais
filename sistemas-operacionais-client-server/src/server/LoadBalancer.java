@@ -1,5 +1,6 @@
 package server;
 
+import java.util.Comparator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Queue;
@@ -57,9 +58,7 @@ public class LoadBalancer {
 
     private int findLeastLoadedWorker() {
         return workerStatus.entrySet().stream()
-                .min((e1, e2) -> Integer.compare(
-                        e1.getValue().getCurrentConnections(),
-                        e2.getValue().getCurrentConnections()))
+                .min(Comparator.comparingInt(e -> e.getValue().getCurrentConnections()))
                 .map(e -> e.getKey())
                 .orElse(basePort + 1);
     }

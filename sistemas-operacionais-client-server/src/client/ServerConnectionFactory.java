@@ -7,16 +7,12 @@ public abstract class ServerConnectionFactory {
     protected static final String SERVER_HOST = "localhost";
 
     public static ServerConnectionFactory getFactory(String serverType) {
-        switch (serverType) {
-            case "THREAD":
-                return new ThreadServerConnectionFactory();
-            case "PROCESS":
-                return new ProcessServerConnectionFactory();
-            case "SELECTOR":
-                return new SelectorServerConnectionFactory();
-            default:
-                return null;
-        }
+        return switch (serverType) {
+            case "THREAD" -> new ThreadServerConnectionFactory();
+            case "PROCESS" -> new ProcessServerConnectionFactory();
+            case "SELECTOR" -> new SelectorServerConnectionFactory();
+            default -> null;
+        };
     }
 
     public abstract ServerConnection createConnection() throws IOException;

@@ -7,6 +7,7 @@ import static util.Log.log;
 
 public class ThreadServer extends AbstractServer {
     private static final int DEFAULT_PORT = 12345;
+    public static int DATABASE_SIZE_THREAD;
 
     public ThreadServer() {
         super(DEFAULT_PORT);
@@ -23,6 +24,8 @@ public class ThreadServer extends AbstractServer {
 
     @Override
     protected void initializeDatabase(int size) {
+        DATABASE_SIZE_THREAD = size;
+
         database = new int[size];
         locks = new ReentrantLock[size];
         for (int i = 0; i < size; i++) {

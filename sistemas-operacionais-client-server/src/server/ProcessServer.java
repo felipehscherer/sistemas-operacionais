@@ -14,6 +14,7 @@ public class ProcessServer extends AbstractServer {
     private static final int NUM_WORKER_PROCESSES = 6;
     private static final int MAX_CONNECTIONS_PER_WORKER = 500;
     private static final String SHARED_MEMORY_FILE = "shared_memory.dat";
+    public static int DATABASE_SIZE_PROCESS;
 
     private MappedByteBuffer sharedMemory;
     private FileChannel fileChannel;
@@ -33,6 +34,8 @@ public class ProcessServer extends AbstractServer {
 
     @Override
     protected void initializeDatabase(int size) {
+        DATABASE_SIZE_PROCESS = size;
+
         try {
             // Criar ou abrir arquivo para memória compartilhada
             fileChannel = FileChannel.open(

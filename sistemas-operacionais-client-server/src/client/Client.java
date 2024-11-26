@@ -5,13 +5,17 @@ import java.net.*;
 import java.util.concurrent.*;
 import java.util.Random;
 import static util.Log.log;
+import static server.ThreadServer.DATABASE_SIZE_THREAD;
+import static server.SelectorServer.DATABASE_SIZE_SELECTOR;
+import static server.ProcessServer.DATABASE_SIZE_PROCESS;
 
 public class Client {
     private static CountDownLatch latch;
     private static final Random random = new Random();
     private static final Semaphore connectionSemaphore = new Semaphore(5000);
-    private static final int MAX_RETRIES = 5;
+    private static final int MAX_RETRIES = 15;
     private static final int INITIAL_BACKOFF_MS = 100;
+    private static String serverTypeGlobal;
 
     public static void main(String[] args) {
         if (args.length != 4) {
@@ -21,6 +25,7 @@ public class Client {
         }
 
         String serverType = args[0].toUpperCase();
+        serverTypeGlobal = serverType;
         int numClients = Integer.parseInt(args[1]);
         int numReads = Integer.parseInt(args[2]);
         int numWrites = Integer.parseInt(args[3]);
@@ -55,7 +60,7 @@ public class Client {
         try {
             latch.await();
             long endTime = System.currentTimeMillis();
-            System.out.println("Todas as operações completadas em " + (endTime - startTime) + "ms");
+            System.out.println("Todas as operações completadas em " + (endTime - startTime)/1000 + "s");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -110,13 +115,13 @@ public class Client {
                     int maxOps = Math.max(numReads, numWrites);
                     for (int i = 0; i < maxOps; i++) {
                         if (i < numReads) {
-                            int position = random.nextInt(1000);
+                            int position = random.nextInt(getDatabaseSize() + 1);
                             String response = connection.executeOperation("READ " + position);
                             log("Cliente " + clientId + " - READ na posição " + position + ": " + response);
                         }
 
                         if (i < numWrites) {
-                            int position = random.nextInt(1000);
+                            int position = random.nextInt(getDatabaseSize() + 1);
                             String response = connection.executeOperation("WRITE " + position);
                             log("Cliente " + clientId + " - WRITE na posição " + position + ": " + response);
                         }
@@ -131,5 +136,15 @@ public class Client {
                 latch.countDown();
             }
         }
+    }
+
+    private static int getDatabaseSize() {
+        if(serverTypeGlobal.equals("THREAD"))
+            return DATABASE_SIZE_THREAD;
+        if(serverTypeGlobal.equals("SELECTOR"))
+            return DATABASE_SIZE_SELECTOR;
+        if(serverTypeGlobal.equals("PROCESS"))
+            return DATABASE_SIZE_PROCESS;
+        return 0;
     }
 }
