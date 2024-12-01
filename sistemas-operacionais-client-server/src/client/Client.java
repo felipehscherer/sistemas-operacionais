@@ -1,5 +1,7 @@
 package client;
 
+import util.PerformanceMetrics;
+
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.*;
@@ -36,6 +38,10 @@ public class Client {
             return;
         }
 
+        PerformanceMetrics performanceMetrics = new PerformanceMetrics();
+
+        performanceMetrics.start();
+
         System.out.println("Iniciando " + numClients + " clientes");
         System.out.println("Cada cliente realizará " + numReads + " leituras e " + numWrites + " escritas");
         System.out.println("Total de operações de escrita esperadas: " + (numClients * numWrites));
@@ -50,6 +56,7 @@ public class Client {
             executor.execute(() -> {
                 try {
                     Thread.sleep(random.nextInt(100));
+                    performanceMetrics.measureAndRecord(); // desempenho de cada client
                     new ClientWorker(clientId, numReads, numWrites, connectionFactory).run();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -64,6 +71,7 @@ public class Client {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        performanceMetrics.printMetrics();
 
         executor.shutdown();
         try {
