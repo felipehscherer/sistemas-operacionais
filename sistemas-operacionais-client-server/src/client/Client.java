@@ -39,8 +39,12 @@ public class Client {
         }
 
         PerformanceMetrics performanceMetrics = new PerformanceMetrics();
-
         performanceMetrics.start();
+
+        ScheduledExecutorService metricsExecutor = Executors.newSingleThreadScheduledExecutor();
+        metricsExecutor.scheduleAtFixedRate(() -> {
+            performanceMetrics.measureAndRecord();
+        }, 0, 100, TimeUnit.MILLISECONDS);
 
         System.out.println("Iniciando " + numClients + " clientes");
         System.out.println("Cada cliente realizará " + numReads + " leituras e " + numWrites + " escritas");
@@ -71,9 +75,19 @@ public class Client {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        // Finaliza o agendador de métricas
+        metricsExecutor.shutdown();
+        try {
+            if (!metricsExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                metricsExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            metricsExecutor.shutdownNow();
+        }
+
         performanceMetrics.printMetrics();
 
-        executor.shutdown();
         try {
             executor.awaitTermination(30, TimeUnit.SECONDS);
         } catch (InterruptedException e) {

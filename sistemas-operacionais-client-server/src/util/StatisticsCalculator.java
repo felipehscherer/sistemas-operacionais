@@ -6,18 +6,30 @@ import java.util.stream.Collectors;
 public class StatisticsCalculator {
 
     public static double getMinimum(List<Double> data) {
+        if (data == null || data.isEmpty()) {
+            return 0.0;
+        }
         return Collections.min(data);
     }
 
     public static double getMaximum(List<Double> data) {
+        if (data == null || data.isEmpty()) {
+            return 0.0;
+        }
         return Collections.max(data);
     }
 
     public static double getMean(List<Double> data) {
+        if (data == null || data.isEmpty()) {
+            return 0.0;
+        }
         return data.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
     }
 
     public static double getMedian(List<Double> data) {
+        if (data == null || data.isEmpty()) {
+            return 0.0;
+        }
         int size = data.size();
         List<Double> sortedData = data.stream().sorted().collect(Collectors.toList());
         if (size % 2 == 0) {
@@ -28,6 +40,9 @@ public class StatisticsCalculator {
     }
 
     public static double getStandardDeviation(List<Double> data) {
+        if (data == null || data.isEmpty()) {
+            return 0.0;
+        }
         double mean = getMean(data);
         double sumSquaredDifferences = data.stream()
                 .mapToDouble(val -> (val - mean) * (val - mean))

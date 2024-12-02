@@ -1,21 +1,16 @@
 package util;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.ThreadMXBean;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.text.DecimalFormat;
 
-import static util.Log.log;
+import com.sun.management.OperatingSystemMXBean;
 
 public class PerformanceMetrics {
-    private long initialStartCpuTime;
-    private long initialStartMemoryUsage;
-    private long initialStartTime;
+    private OperatingSystemMXBean osBean;
 
     private long lastCpuTime;
-    private long lastMemoryUsage;
     private long lastTime;
 
     private List<Double> cpuUsageList = new ArrayList<>();
@@ -25,69 +20,52 @@ public class PerformanceMetrics {
     private static final DecimalFormat df = new DecimalFormat("#.###");
 
     public void start() {
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-
-        initialStartCpuTime = threadMXBean.getCurrentThreadCpuTime();
-        initialStartMemoryUsage = memoryMXBean.getHeapMemoryUsage().getUsed();
-        initialStartTime = System.nanoTime();
-
-        lastCpuTime = initialStartCpuTime;
-        lastMemoryUsage = initialStartMemoryUsage;
-        lastTime = initialStartTime;
+        osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        lastCpuTime = osBean.getProcessCpuTime();
+        lastTime = System.nanoTime();
     }
 
-    public void measureAndRecord() {
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-
-        long currentCpuTime = threadMXBean.getCurrentThreadCpuTime();
-        long currentMemoryUsage = memoryMXBean.getHeapMemoryUsage().getUsed();
-        long currentTime = System.nanoTime();
-
-        if (currentTime >= lastTime) {
-            double elapsedTimeDelta = (currentTime - lastTime) / 1_000_000.0; // em milissegundos
-
-            if (currentCpuTime >= lastCpuTime) {
-                double cpuTimeDelta = (currentCpuTime - lastCpuTime) / 1_000_000.0; // em milissegundos
-                double cpuUsage = (cpuTimeDelta / elapsedTimeDelta) * 100.0; // percentual de uso da CPU
-                cpuUsageList.add(cpuUsage);
-                lastCpuTime = currentCpuTime;
-            } else {
-                // Tratar caso de tempo de CPU negativo
-                System.err.println("Aviso: Tempo de CPU diminuiu. Possível inconsistência nas medições.");
-            }
-
-            double memoryUsage = (currentMemoryUsage - lastMemoryUsage) / (1024.0 * 1024.0);
-            memoryUsageList.add(memoryUsage);
-            lastMemoryUsage = currentMemoryUsage;
-
-            double latency = elapsedTimeDelta;
-            latencyList.add(latency);
-            lastTime = currentTime;
+    public synchronized void measureAndRecord() {
+        double processCpuLoad = osBean.getProcessCpuLoad();
+        if (processCpuLoad >= 0) {
+            double cpuUsagePercent = processCpuLoad * 100.0;
+            cpuUsageList.add(cpuUsagePercent);
         } else {
-            log("Aviso: Tempo do sistema diminuiu. Possível inconsistência nas medições.");
+            System.err.println("Não foi possível obter o uso de CPU do processo.");
         }
+
+        // Memória usada pela JVM em MB
+        double memoryUsageMB = (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())
+                / (1024 * 1024);
+        memoryUsageList.add(memoryUsageMB);
+
+        // Latência (tempo entre medições) em milissegundos
+        long currentTime = System.nanoTime();
+        long deltaTime = currentTime - lastTime;
+        double latency = deltaTime / 1_000_000.0;
+        latencyList.add(latency);
+        lastTime = currentTime;
     }
+
 
     public void printMetrics() {
         System.out.println("Métricas de Desempenho:");
 
-        long endTime = System.nanoTime();
-        double totalExecutionTime = (endTime - initialStartTime) / 1_000_000_000.0; // em segundos
-        System.out.println("Tempo total de execução: " + formatDouble(totalExecutionTime) + " segundos\n");
-
-        System.out.println("Uso de CPU:");
+        System.out.println("\nUso de CPU:");
         printStatistics(cpuUsageList, "% (percentual)", "Percentual de uso de CPU");
 
         System.out.println("\nUso de Memória:");
-        printStatistics(memoryUsageList, "MB (Megabytes)", "Variação de memória heap");
+        printStatistics(memoryUsageList, "MB (Megabytes)", "Uso de memória heap");
 
         System.out.println("\nLatência:");
         printStatistics(latencyList, "ms (milissegundos)", "Tempo entre medições");
     }
 
     private void printStatistics(List<Double> data, String unit, String description) {
+        if (data.isEmpty()) {
+            System.out.println("  " + description + ": Nenhum dado coletado.");
+            return;
+        }
         System.out.println("  " + description + ":");
         System.out.println("    Mínimo: " + formatDouble(StatisticsCalculator.getMinimum(data)) + " " + unit);
         System.out.println("    Máximo: " + formatDouble(StatisticsCalculator.getMaximum(data)) + " " + unit);
