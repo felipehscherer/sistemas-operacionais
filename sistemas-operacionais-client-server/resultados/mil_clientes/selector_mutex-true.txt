@@ -1,0 +1,34 @@
+Rodando com:
+
+java server/SelectorServer 1 true true
+java client/Client selector 1000 10 10
+
+Iniciando 1000 clientes
+Cada cliente realizará 10 leituras e 10 escritas
+Total de operações de escrita esperadas: 10000
+Todas as operações completadas em 0s
+Métricas de Desempenho:
+
+Uso de CPU:
+  Percentual de uso de CPU:
+    Mínimo: 0 % (percentual)
+    Máximo: 100 % (percentual)
+    Média: 6,499 % (percentual)
+    Mediana: 0 % (percentual)
+    Desvio Padrão: 22,437 % (percentual)
+
+Uso de Memória:
+  Uso de memória heap:
+    Mínimo: 5,529 MB (Megabytes)
+    Máximo: 53,441 MB (Megabytes)
+    Média: 37,074 MB (Megabytes)
+    Mediana: 39,305 MB (Megabytes)
+    Desvio Padrão: 9,956 MB (Megabytes)
+
+Latência:
+  Tempo entre medições:
+    Mínimo: 0,111 ms (milissegundos)
+    Máximo: 14,063 ms (milissegundos)
+    Média: 0,586 ms (milissegundos)
+    Mediana: 0,337 ms (milissegundos)
+    Desvio Padrão: 0,776 ms (milissegundos)

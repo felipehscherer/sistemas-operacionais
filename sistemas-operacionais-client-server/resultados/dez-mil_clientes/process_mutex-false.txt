@@ -1,0 +1,34 @@
+Rodando com:
+
+java server/ProcessServer 1000 false true
+java client/Client process 10000 100 100
+
+Iniciando 10000 clientes
+Cada cliente realizará 100 leituras e 100 escritas
+Total de operações de escrita esperadas: 1000000
+Todas as operações completadas em 10s
+Métricas de Desempenho:
+
+Uso de CPU:
+  Percentual de uso de CPU:
+    Mínimo: 0 % (percentual)
+    Máximo: 100 % (percentual)
+    Média: 11,937 % (percentual)
+    Mediana: 0 % (percentual)
+    Desvio Padrão: 27,706 % (percentual)
+
+Uso de Memória:
+  Uso de memória heap:
+    Mínimo: 5,529 MB (Megabytes)
+    Máximo: 445,477 MB (Megabytes)
+    Média: 227,038 MB (Megabytes)
+    Mediana: 205,063 MB (Megabytes)
+    Desvio Padrão: 118,475 MB (Megabytes)
+
+Latência:
+  Tempo entre medições:
+    Mínimo: 0,078 ms (milissegundos)
+    Máximo: 31,5 ms (milissegundos)
+    Média: 1,02 ms (milissegundos)
+    Mediana: 0,672 ms (milissegundos)
+    Desvio Padrão: 1,132 ms (milissegundos)
